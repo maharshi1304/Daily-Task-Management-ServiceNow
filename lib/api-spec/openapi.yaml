@@ -3,13 +3,24 @@ info:
   # Do not change the title, if the title changes, the import paths will be broken
   title: Api
   version: 0.1.0
-  description: API specification
+  description: Daily Task Manager API for incidents, service requests, work notes, and resolutions
 servers:
   - url: /api
     description: Base API path
 tags:
   - name: health
     description: Health operations
+  - name: incidents
+    description: Incident management
+  - name: service-requests
+    description: Service request management
+  - name: work-notes
+    description: Work notes management
+  - name: resolutions
+    description: Resolution management
+  - name: dashboard
+    description: Dashboard and summary data
+
 paths:
   /healthz:
     get:
@@ -24,6 +35,506 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+
+  # ─── Incidents ───────────────────────────────────────────────
+  /incidents:
+    get:
+      operationId: listIncidents
+      tags: [incidents]
+      summary: List all incidents
+      parameters:
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [open, in_progress, resolved, closed]
+        - name: priority
+          in: query
+          schema:
+            type: string
+            enum: [low, medium, high, critical]
+        - name: date
+          in: query
+          schema:
+            type: string
+            format: date
+      responses:
+        "200":
+          description: List of incidents
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Incident"
+    post:
+      operationId: createIncident
+      tags: [incidents]
+      summary: Create a new incident
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/IncidentInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Incident"
+
+  /incidents/{id}:
+    get:
+      operationId: getIncident
+      tags: [incidents]
+      summary: Get an incident by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Incident details
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Incident"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    patch:
+      operationId: updateIncident
+      tags: [incidents]
+      summary: Update an incident
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/IncidentUpdate"
+      responses:
+        "200":
+          description: Updated incident
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Incident"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    delete:
+      operationId: deleteIncident
+      tags: [incidents]
+      summary: Delete an incident
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+
+  # ─── Service Requests ─────────────────────────────────────────
+  /service-requests:
+    get:
+      operationId: listServiceRequests
+      tags: [service-requests]
+      summary: List all service requests
+      parameters:
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [open, in_progress, resolved, closed]
+        - name: priority
+          in: query
+          schema:
+            type: string
+            enum: [low, medium, high, critical]
+        - name: date
+          in: query
+          schema:
+            type: string
+            format: date
+      responses:
+        "200":
+          description: List of service requests
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ServiceRequest"
+    post:
+      operationId: createServiceRequest
+      tags: [service-requests]
+      summary: Create a new service request
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ServiceRequestInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ServiceRequest"
+
+  /service-requests/{id}:
+    get:
+      operationId: getServiceRequest
+      tags: [service-requests]
+      summary: Get a service request by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Service request details
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ServiceRequest"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    patch:
+      operationId: updateServiceRequest
+      tags: [service-requests]
+      summary: Update a service request
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ServiceRequestUpdate"
+      responses:
+        "200":
+          description: Updated service request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ServiceRequest"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    delete:
+      operationId: deleteServiceRequest
+      tags: [service-requests]
+      summary: Delete a service request
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+
+  # ─── Work Notes ───────────────────────────────────────────────
+  /work-notes:
+    get:
+      operationId: listWorkNotes
+      tags: [work-notes]
+      summary: List all work notes
+      parameters:
+        - name: date
+          in: query
+          schema:
+            type: string
+            format: date
+        - name: relatedType
+          in: query
+          schema:
+            type: string
+            enum: [incident, service_request, general]
+        - name: relatedId
+          in: query
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: List of work notes
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/WorkNote"
+    post:
+      operationId: createWorkNote
+      tags: [work-notes]
+      summary: Create a new work note
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/WorkNoteInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WorkNote"
+
+  /work-notes/{id}:
+    get:
+      operationId: getWorkNote
+      tags: [work-notes]
+      summary: Get a work note by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Work note details
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WorkNote"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    patch:
+      operationId: updateWorkNote
+      tags: [work-notes]
+      summary: Update a work note
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/WorkNoteUpdate"
+      responses:
+        "200":
+          description: Updated work note
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WorkNote"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    delete:
+      operationId: deleteWorkNote
+      tags: [work-notes]
+      summary: Delete a work note
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+
+  # ─── Resolutions ──────────────────────────────────────────────
+  /resolutions:
+    get:
+      operationId: listResolutions
+      tags: [resolutions]
+      summary: List all resolutions
+      parameters:
+        - name: date
+          in: query
+          schema:
+            type: string
+            format: date
+        - name: relatedType
+          in: query
+          schema:
+            type: string
+            enum: [incident, service_request]
+      responses:
+        "200":
+          description: List of resolutions
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Resolution"
+    post:
+      operationId: createResolution
+      tags: [resolutions]
+      summary: Create a new resolution
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ResolutionInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Resolution"
+
+  /resolutions/{id}:
+    get:
+      operationId: getResolution
+      tags: [resolutions]
+      summary: Get a resolution by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Resolution details
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Resolution"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    patch:
+      operationId: updateResolution
+      tags: [resolutions]
+      summary: Update a resolution
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ResolutionUpdate"
+      responses:
+        "200":
+          description: Updated resolution
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Resolution"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    delete:
+      operationId: deleteResolution
+      tags: [resolutions]
+      summary: Delete a resolution
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+
+  # ─── Dashboard / Summary (wow endpoints) ──────────────────────
+  /dashboard/summary:
+    get:
+      operationId: getDailySummary
+      tags: [dashboard]
+      summary: Get daily summary counts and status breakdowns
+      parameters:
+        - name: date
+          in: query
+          schema:
+            type: string
+            format: date
+      responses:
+        "200":
+          description: Daily summary
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DailySummary"
+
+  /dashboard/activity:
+    get:
+      operationId: getRecentActivity
+      tags: [dashboard]
+      summary: Get recent activity feed across all item types
+      parameters:
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 20
+      responses:
+        "200":
+          description: Recent activity list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ActivityItem"
+
 components:
   schemas:
     HealthStatus:
@@ -34,3 +545,383 @@ components:
       required:
         - status
 
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+      required:
+        - error
+
+    # ─── Incident ──────────────────────────────────────────────
+    Incident:
+      type: object
+      required: [id, title, status, priority, createdAt, updatedAt]
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
+        description:
+          type: ["string", "null"]
+        status:
+          type: string
+          enum: [open, in_progress, resolved, closed]
+        priority:
+          type: string
+          enum: [low, medium, high, critical]
+        assignedTo:
+          type: ["string", "null"]
+        tags:
+          type: ["string", "null"]
+        incidentDate:
+          type: ["string", "null"]
+          format: date
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    IncidentInput:
+      type: object
+      required: [title, status, priority]
+      properties:
+        title:
+          type: string
+          minLength: 1
+        description:
+          type: string
+        status:
+          type: string
+          enum: [open, in_progress, resolved, closed]
+        priority:
+          type: string
+          enum: [low, medium, high, critical]
+        assignedTo:
+          type: string
+        tags:
+          type: string
+        incidentDate:
+          type: string
+          format: date
+
+    IncidentUpdate:
+      type: object
+      properties:
+        title:
+          type: string
+          minLength: 1
+        description:
+          type: string
+        status:
+          type: string
+          enum: [open, in_progress, resolved, closed]
+        priority:
+          type: string
+          enum: [low, medium, high, critical]
+        assignedTo:
+          type: string
+        tags:
+          type: string
+        incidentDate:
+          type: string
+          format: date
+
+    # ─── Service Request ───────────────────────────────────────
+    ServiceRequest:
+      type: object
+      required: [id, title, status, priority, createdAt, updatedAt]
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
+        description:
+          type: ["string", "null"]
+        requester:
+          type: ["string", "null"]
+        status:
+          type: string
+          enum: [open, in_progress, resolved, closed]
+        priority:
+          type: string
+          enum: [low, medium, high, critical]
+        category:
+          type: ["string", "null"]
+        tags:
+          type: ["string", "null"]
+        requestDate:
+          type: ["string", "null"]
+          format: date
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    ServiceRequestInput:
+      type: object
+      required: [title, status, priority]
+      properties:
+        title:
+          type: string
+          minLength: 1
+        description:
+          type: string
+        requester:
+          type: string
+        status:
+          type: string
+          enum: [open, in_progress, resolved, closed]
+        priority:
+          type: string
+          enum: [low, medium, high, critical]
+        category:
+          type: string
+        tags:
+          type: string
+        requestDate:
+          type: string
+          format: date
+
+    ServiceRequestUpdate:
+      type: object
+      properties:
+        title:
+          type: string
+          minLength: 1
+        description:
+          type: string
+        requester:
+          type: string
+        status:
+          type: string
+          enum: [open, in_progress, resolved, closed]
+        priority:
+          type: string
+          enum: [low, medium, high, critical]
+        category:
+          type: string
+        tags:
+          type: string
+        requestDate:
+          type: string
+          format: date
+
+    # ─── Work Note ─────────────────────────────────────────────
+    WorkNote:
+      type: object
+      required: [id, title, content, createdAt, updatedAt]
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
+        content:
+          type: string
+        relatedType:
+          type: ["string", "null"]
+          enum: [incident, service_request, general, null]
+        relatedId:
+          type: ["integer", "null"]
+        noteDate:
+          type: ["string", "null"]
+          format: date
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    WorkNoteInput:
+      type: object
+      required: [title, content]
+      properties:
+        title:
+          type: string
+          minLength: 1
+        content:
+          type: string
+          minLength: 1
+        relatedType:
+          type: string
+          enum: [incident, service_request, general]
+        relatedId:
+          type: integer
+        noteDate:
+          type: string
+          format: date
+
+    WorkNoteUpdate:
+      type: object
+      properties:
+        title:
+          type: string
+          minLength: 1
+        content:
+          type: string
+          minLength: 1
+        relatedType:
+          type: string
+          enum: [incident, service_request, general]
+        relatedId:
+          type: integer
+        noteDate:
+          type: string
+          format: date
+
+    # ─── Resolution ────────────────────────────────────────────
+    Resolution:
+      type: object
+      required: [id, title, description, createdAt, updatedAt]
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
+        description:
+          type: string
+        rootCause:
+          type: ["string", "null"]
+        actionsTaken:
+          type: ["string", "null"]
+        relatedType:
+          type: ["string", "null"]
+          enum: [incident, service_request, null]
+        relatedId:
+          type: ["integer", "null"]
+        resolvedAt:
+          type: ["string", "null"]
+          format: date-time
+        resolutionDate:
+          type: ["string", "null"]
+          format: date
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    ResolutionInput:
+      type: object
+      required: [title, description]
+      properties:
+        title:
+          type: string
+          minLength: 1
+        description:
+          type: string
+          minLength: 1
+        rootCause:
+          type: string
+        actionsTaken:
+          type: string
+        relatedType:
+          type: string
+          enum: [incident, service_request]
+        relatedId:
+          type: integer
+        resolvedAt:
+          type: string
+          format: date-time
+        resolutionDate:
+          type: string
+          format: date
+
+    ResolutionUpdate:
+      type: object
+      properties:
+        title:
+          type: string
+          minLength: 1
+        description:
+          type: string
+          minLength: 1
+        rootCause:
+          type: string
+        actionsTaken:
+          type: string
+        relatedType:
+          type: string
+          enum: [incident, service_request]
+        relatedId:
+          type: integer
+        resolvedAt:
+          type: string
+          format: date-time
+        resolutionDate:
+          type: string
+          format: date
+
+    # ─── Dashboard ─────────────────────────────────────────────
+    DailySummary:
+      type: object
+      required: [date, incidents, serviceRequests, workNotes, resolutions]
+      properties:
+        date:
+          type: string
+        incidents:
+          $ref: "#/components/schemas/CategorySummary"
+        serviceRequests:
+          $ref: "#/components/schemas/CategorySummary"
+        workNotes:
+          type: object
+          required: [total]
+          properties:
+            total:
+              type: integer
+        resolutions:
+          type: object
+          required: [total]
+          properties:
+            total:
+              type: integer
+
+    CategorySummary:
+      type: object
+      required: [total, open, in_progress, resolved, closed, critical, high]
+      properties:
+        total:
+          type: integer
+        open:
+          type: integer
+        in_progress:
+          type: integer
+        resolved:
+          type: integer
+        closed:
+          type: integer
+        critical:
+          type: integer
+        high:
+          type: integer
+
+    ActivityItem:
+      type: object
+      required: [id, type, action, title, createdAt]
+      properties:
+        id:
+          type: integer
+        type:
+          type: string
+          enum: [incident, service_request, work_note, resolution]
+        action:
+          type: string
+          enum: [created, updated]
+        title:
+          type: string
+        status:
+          type: ["string", "null"]
+        priority:
+          type: ["string", "null"]
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time

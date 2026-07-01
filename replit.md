@@ -1,10 +1,11 @@
-# [Project name]
+# Daily Task Manager
 
-_Replace the heading above with the project's name, and this line with one sentence describing what this app does for users._
+A personal IT operations log for tracking daily incidents, service requests, work notes, and resolutions — with a dashboard showing today's summary and a live activity feed.
 
 ## Run & Operate
 
-- `pnpm --filter @workspace/api-server run dev` — run the API server (port 5000)
+- `pnpm --filter @workspace/taskmanager run dev` — run the frontend (port assigned by workflow)
+- `pnpm --filter @workspace/api-server run dev` — run the API server (port 8080)
 - `pnpm run typecheck` — full typecheck across all packages
 - `pnpm run build` — typecheck + build all packages
 - `pnpm --filter @workspace/api-spec run codegen` — regenerate API hooks and Zod schemas from the OpenAPI spec
@@ -14,6 +15,7 @@ _Replace the heading above with the project's name, and this line with one sente
 ## Stack
 
 - pnpm workspaces, Node.js 24, TypeScript 5.9
+- Frontend: React + Vite, Tailwind CSS, wouter routing, TanStack Query
 - API: Express 5
 - DB: PostgreSQL + Drizzle ORM
 - Validation: Zod (`zod/v4`), `drizzle-zod`
@@ -22,23 +24,36 @@ _Replace the heading above with the project's name, and this line with one sente
 
 ## Where things live
 
-_Populate as you build — short repo map plus pointers to the source-of-truth file for DB schema, API contracts, theme files, etc._
+- `lib/api-spec/openapi.yaml` — API contract (source of truth)
+- `lib/db/src/schema/` — DB tables: incidents, service_requests, work_notes, resolutions
+- `artifacts/api-server/src/routes/` — Express route handlers
+- `artifacts/taskmanager/src/pages/` — React pages (dashboard, incidents, service-requests, work-notes, resolutions + detail views)
 
 ## Architecture decisions
 
-_Populate as you build — non-obvious choices a reader couldn't infer from the code (3-5 bullets)._
+- Date fields (incidentDate, requestDate, noteDate, resolutionDate) are stored as `text` in `YYYY-MM-DD` format; dashboard summary filters by exact string match against today's date
+- All create routes auto-populate today's date if none is provided, ensuring new items always appear in the daily summary
+- Status/priority enums validated server-side; service_requests uses free-text columns but enforces enum values in route handlers
 
 ## Product
 
-_Describe the high-level user-facing capabilities of this app once they exist._
+Personal daily task manager for an IT professional. Tracks:
+- **Incidents** — operational disruptions with priority/status
+- **Service Requests** — access, hardware, software requests
+- **Work Notes** — freeform log entries linked to incidents or SRs
+- **Resolutions** — post-mortems with root cause and actions taken
+
+Dashboard shows today's counts, status breakdowns, and a live activity feed.
 
 ## User preferences
 
-_Populate as you build — explicit user instructions worth remembering across sessions._
+_Populate as you build._
 
 ## Gotchas
 
-_Populate as you build — sharp edges, "always run X before Y" rules._
+- Run `pnpm --filter @workspace/db run push` after any schema changes before testing the API
+- Run codegen (`pnpm --filter @workspace/api-spec run codegen`) after any OpenAPI spec changes
+- `lib/` packages are composite; run `pnpm run typecheck:libs` before leaf artifact typechecks if you change a lib
 
 ## Pointers
 

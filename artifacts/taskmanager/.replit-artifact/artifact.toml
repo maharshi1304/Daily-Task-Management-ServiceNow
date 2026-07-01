@@ -1,0 +1,27 @@
+kind = "web"
+previewPath = "/"
+title = "Daily Task Manager"
+version = "1.0.0"
+id = "artifacts/taskmanager"
+router = "path"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 20662
+
+[services.development]
+run = "pnpm --filter @workspace/taskmanager run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/taskmanager", "run", "build" ]
+serve = "static"
+publicDir = "artifacts/taskmanager/dist/public"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "20662"
+BASE_PATH = "/"

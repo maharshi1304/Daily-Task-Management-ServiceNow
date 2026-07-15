@@ -90,9 +90,13 @@ export default function LoginPage() {
             {loading ? "Signing in…" : "Sign in"}
           </button>
 
-          <p className="mt-4 text-center text-xs text-slate-500">
-            Contact your manager to get an account
-          </p>
+          <div className="mt-5 pt-4 border-t border-white/10 space-y-1.5">
+            <p className="text-center text-[11px] font-semibold uppercase tracking-widest text-slate-500">Demo accounts</p>
+            <div className="flex justify-center gap-4 text-xs text-slate-400">
+              <span><span className="text-slate-300 font-medium">manager</span> / manager123</span>
+              <span><span className="text-slate-300 font-medium">agent1</span> / agent123</span>
+            </div>
+          </div>
         </form>
       </div>
     </div>

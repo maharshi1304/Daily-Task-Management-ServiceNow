@@ -343,82 +343,111 @@ Dashboard
 
 
 
-# Authentication & Authorization Flow
-User enters username + password
-          │
-          ▼
-POST /api/auth/login
-  bcrypt.compare(password, hash)
-          │ match
-          ▼
-req.session.user = { id, username, displayName, role, email }
-  ──► Set-Cookie: connect.sid (httpOnly, secure in prod, 7-day TTL)
-          │
-          ▼
-Browser stores cookie automatically.
-Every subsequent fetch includes it via credentials: "include".
-          │
-          ▼
-requireAuth middleware (every protected route):
-  if (!req.session?.user) → 401
-  else → next()
-          │
-          ▼
-requireManager middleware (manager-only routes):
-  if (req.session.user.role !== "manager") → 403
-  else → next()
-          │
-          ▼
-Row-level scoping inside route handlers:
-  Agent  → WHERE created_by = req.session.user.id
-  Manager → no WHERE filter (sees everything)
+# 🔐 Authentication Flow
 
-# 🖥 Frontend Routing & Pages
-/ (root)
-├── <AuthProvider>          checks /auth/me on mount
-│     ├── isLoading → spinner
-│     ├── !user    → <LoginPage>
-│     └── user     → <AppLayout> (sidebar + main content)
-│           │
-│           ├── /                  Dashboard
-│           │     today's stats, activity feed, quick-add dialogs
-│           │
-│           ├── /incidents         Incidents list (filterable)
-│           │   /incidents/:id     Detail — inline edit, delete
-│           │
-│           ├── /service-requests  Service Requests list
-│           │   /service-requests/:id
-│           │
-│           ├── /work-notes        Work Notes list
-│           │   /work-notes/:id
-│           │
-│           ├── /resolutions       Resolutions list
-│           │   /resolutions/:id
-│           │
-│           └── /team              Team Overview (manager role only)
-│                 per-member cards, expandable work logs,
-│                 create/reset/delete accounts
+```
 
+User Login
 
-# 🔄 How Data Flows End-to-End
-Example: Agent creates an Incident
-1. Agent fills in form on /incidents page and clicks "Create"
-2. React calls:
-   api.post("/incidents", { title, priority, category, ... })
-   ↓
-   fetch("/api/incidents", { method: "POST", credentials: "include", body: JSON })
-3. Express receives POST /api/incidents
-   → requireAuth checks session cookie → valid (agent1, id=2)
-   → Route handler:
-       body.createdBy  = req.session.user.id   (= 2, forced server-side)
-       body.incidentDate ??= today's ISO date
-       INSERT INTO incidents (...) VALUES (...)  RETURNING id
-       UPDATE incidents SET incident_number = 'INC' + zero-padded(id)
-       WHERE id = newId
-4. Response: full incident object including incidentNumber
-5. TanStack Query invalidates ["incidents"] cache
-   → list re-fetches automatically → new row appears
+      │
 
+      ▼
+
+Express Session
+
+      │
+
+      ▼
+
+Cookie Created
+
+      │
+
+      ▼
+
+Protected API
+
+      │
+
+      ▼
+
+Role Validation
+
+      │
+
+      ▼
+
+Response
+
+```
+
+---
+
+# 🖥 Frontend Pages
+
+- Login
+
+- Dashboard
+
+- Incidents
+
+- Service Requests
+
+- Work Notes
+
+- Resolutions
+
+- Team Overview
+
+- Profile
+
+---
+
+# 🔄 Data Flow
+
+```
+
+React Form
+
+      │
+
+      ▼
+
+Express API
+
+      │
+
+      ▼
+
+Validation (Zod)
+
+      │
+
+      ▼
+
+Drizzle ORM
+
+      │
+
+      ▼
+
+PostgreSQL
+
+      │
+
+      ▼
+
+JSON Response
+
+      │
+
+      ▼
+
+React UI Update
+
+```
+
+---
 Example: Manager views Team Overview
 1. Manager navigates to /team
 2. React calls api.get("/dashboard/team")

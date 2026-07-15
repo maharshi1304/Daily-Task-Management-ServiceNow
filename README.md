@@ -1,4 +1,4 @@
-# 🚀 Daily Task Management System
+# 🚀 Daily Task Management System ServiceNow
 
 A full-stack IT Service Desk task management application inspired by ServiceNow workflows. It enables managers and agents to efficiently manage incidents, service requests, work notes, and resolutions with secure role-based access control.
 
